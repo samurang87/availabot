@@ -93,7 +93,7 @@ func saveToken(file string, token *oauth2.Token) {
 func GetBusyCalendar() []*calendar.TimePeriod {
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("../client_id.json")
+	b, err := ioutil.ReadFile("client_id.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
