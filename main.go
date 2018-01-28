@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/samurang87/availabot/availabot"
+	"github.com/samurang87/availabot/calendar_checker"
 	"fmt")
 
 func main() {
