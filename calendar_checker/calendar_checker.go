@@ -90,7 +90,7 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func GetBusyCalendar() []*calendar.TimePeriod {
+func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("client_id.json")
@@ -112,9 +112,9 @@ func GetBusyCalendar() []*calendar.TimePeriod {
 		log.Fatalf("Unable to retrieve calendar Client %v", err)
 	}
 
-	t := time.Now().UTC().Format(time.RFC3339)
+	t := t0.UTC().Format(time.RFC3339)
 
-	t1 := time.Now().Add(time.Duration(50)*time.Hour).UTC().Format(time.RFC3339)
+	t1 := t0.Add(time.Duration(168)*time.Hour).UTC().Format(time.RFC3339)
 
 	fbri := calendar.FreeBusyRequestItem{Id: "primary"}
 
@@ -129,6 +129,18 @@ func GetBusyCalendar() []*calendar.TimePeriod {
 
 	freebusy_cal := freebusy.Calendars["primary"].Busy
 
-	return freebusy_cal
+	return t0, freebusy_cal
 
+}
+
+// GetNextThreeEvenings gets a freebusy calendar and a timezone and return the next three free evenings
+func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) []time.Time {
+
+	date_array:= make([]time.Time, 3)
+
+	for i:=0;i<3;i++ {
+		date_array[i] = time.Now()
+	}
+
+	return date_array
 }

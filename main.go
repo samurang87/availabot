@@ -1,11 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"github.com/samurang87/availabot/calendar_checker"
-	"fmt")
+	"time"
+)
 
 func main() {
 
-	fmt.Println(calendar_checker.GetBusyCalendar())
+	_, busy := calendar_checker.GetBusyCalendar(time.Now())
 
+	for _, slot := range busy {
+
+		fmt.Println(slot.Start)
+		fmt.Println(slot.End)
+
+	}
 }

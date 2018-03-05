@@ -1,9 +1,21 @@
 package calendar_checker
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
 
-func TestFoo(t *testing.T) {
-	if true != true {
-		t.Errorf("everyting is false!")
+func TestGetNextThreeEvenings(t *testing.T) {
+
+	afternoon_start, err := time.Parse(time.RFC3339, "2018-02-15T15:04:05+01:00")
+
+	if err == nil {
+		fmt.Println(GetNextThreeEvenings(afternoon_start))
+	} else {
+		fmt.Println(err)
 	}
+
+
+
 }
