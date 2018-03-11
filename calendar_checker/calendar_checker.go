@@ -112,18 +112,18 @@ func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 		log.Fatalf("Unable to retrieve calendar Client %v", err)
 	}
 
-	t := t0.UTC().Format(time.RFC3339)
+	t := t0.Format(time.RFC3339)
 
-	t1 := t0.Add(time.Duration(168)*time.Hour).UTC().Format(time.RFC3339)
+	t1 := t0.Add(time.Duration(168) * time.Hour).Format(time.RFC3339)
 
 	fbri := calendar.FreeBusyRequestItem{Id: "primary"}
 
-	query := &calendar.FreeBusyRequest {
+	query := &calendar.FreeBusyRequest{
 		CalendarExpansionMax: 2,
-		Items: []*calendar.FreeBusyRequestItem{&fbri},
-		TimeMin: t,
-		TimeMax: t1,
-		}
+		Items:                []*calendar.FreeBusyRequestItem{&fbri},
+		TimeMin:              t,
+		TimeMax:              t1,
+	}
 
 	freebusy, err := srv.Freebusy.Query(query).Do()
 
