@@ -3,6 +3,7 @@
 *.dll
 *.so
 *.dylib
+availabot
 
 # Test binary, build with `go test -c`
 *.test
@@ -16,3 +17,4 @@
 # Other
 client_id.json
 .idea/
+vendor/
