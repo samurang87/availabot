@@ -15,12 +15,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/samurang87/availabot"
-  packages = ["calendar_checker"]
-  revision = "f93185a321750204acf79fd1821e17a8ca476169"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
   revision = "d0aafc73d5cdc42264b0af071c261abac580695e"
@@ -46,6 +40,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6a038e87d9857f49a949a1d27abdcd22e875cee4a17e2fc6339d79780d45ff64"
+  inputs-digest = "7d21f6feeb6b6fbe5f704b91f38c46cb6b8f3ef8c17e37708294854722bb4b70"
   solver-name = "gps-cdcl"
   solver-version = 1
