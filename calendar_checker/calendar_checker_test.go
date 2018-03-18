@@ -33,8 +33,8 @@ func TestGetNextThreeEvenings(t *testing.T) {
 
 
 	// check
-	for i, want := range(free_dates) {
-		
+	for i, want := range free_dates {
+
 		got := result[i]
 
 		if want != got {

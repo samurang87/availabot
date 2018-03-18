@@ -134,58 +134,76 @@ func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 }
 
 // GetNextThreeEvenings gets a freebusy calendar and a timezone and return the next three free evenings
-func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) []time.Time {
+func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Time) {
 
-	date_array := make([]time.Time, 3)
+	var startDate time.Time
 
-	// if time is less than 19
-
-	// start from tomorrow
-
-	// otherwise from today
-
-	// calculate a map of days 165 hours from now, all False
-
-	// for each busy slot
-
-	// update the map if it makes the evening busy
-
-	// add to the result list the first three ones
-
-	for i := 0; i < 3; i++ {
-		date_array[i] = time.Now()
-	}
-
-	return date_array
-
-}
-
-func checkIfBusyEvening(slot *calendar.TimePeriod) (date time.Time, isBusy bool) {
-
-	// if the event starts between 19 and 23:59
-
-	start_time, _ := time.Parse(time.RFC3339, slot.Start)
-	end_time, _ := time.Parse(time.RFC3339, slot.End)
-
-	evening_start := time.Date(
-		start_time.Year(),
-		start_time.Month(),
-		start_time.Day(),
-		19,
-		0,
-		0,
-		0,
-		start_time.Location())
-
-	if (start_time.Hour() >= 19 && start_time.Hour() <= 23) ||
-		(end_time.Hour() >= 19 && end_time.Hour() <= 23) ||
-		end_time.Day() > start_time.Day() {
-
-		return evening_start, true
+	if t.Hour() < 19 {
+		startDate = time.Date(t.Year(), t.Month(), t.Day(), 19, 0, 0, 0, t.Location())
 
 	} else {
 
-		return evening_start, false
+		startDate = time.Date(t.Year(), t.Month(), t.Day()+1, 19, 0, 0, 0, t.Location())
 	}
 
+	var nextSevenDays [7]time.Time
+
+	for day := 0; day <= 6; day++ {
+
+		if day == 0 {
+
+			nextSevenDays[day] = startDate
+
+		} else {
+
+			nextSevenDays[day] = nextSevenDays[day-1].Add(time.Duration(24) * time.Hour)
+		}
+
+	}
+
+
+	for _, eveningStart := range nextSevenDays {
+
+		eveningEnd := time.Date(
+			eveningStart.Year(),
+			eveningStart.Month(),
+			eveningStart.Day()+1,
+			0,
+			0,
+			0,
+			0,
+			eveningStart.Location())
+
+		isFree := true
+
+		for _, busySlot := range c {
+
+			start_time, _ := time.Parse(time.RFC3339, busySlot.Start)
+			end_time, _ := time.Parse(time.RFC3339, busySlot.End)
+
+			if ! (end_time.Before(eveningStart) || start_time.After(eveningEnd)) {
+
+				isFree = false
+				break
+
+			}
+		}
+
+		if isFree {
+
+			free = append(free, eveningStart)
+
+		}
+
+		if len(free) == 3 {
+
+			break
+		}
+
+	}
+
+
+	return
+
 }
+
