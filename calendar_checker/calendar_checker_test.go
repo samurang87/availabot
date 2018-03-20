@@ -84,25 +84,19 @@ func TestGetNextThreeEveningsButYouAreOnVacation (t *testing.T) {
 
 	onlySlot := calendar.TimePeriod{
 		Start: "2018-02-16T18:04:05+01:00",
-		End: "2018-02-2816T21:04:05+01:00",
+		End: "2018-02-28T21:04:05+01:00",
 	}
 
-	calendar_example := calendar.FreeBusyCalendar{Busy:[]*calendar.TimePeriod{&onlySlot}}
-
-	free_dates := make([]time.Time, 3)
+	calendarExample := calendar.FreeBusyCalendar{Busy:[]*calendar.TimePeriod{&onlySlot}}
 
 	// execution
-	result := GetNextThreeEvenings(afternoonStart, calendar_example.Busy)
+	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
 
 
 	// check
-	for i, want := range free_dates {
+	if len(result) != 0 {
+		t.Errorf("It should not have returned any free evenings! But it returned %v", result)
 
-		got := result[i]
-
-		if want != got {
-			t.Errorf("For date n. %v, wanted %v, got %v", i, want, got)
-		}
 	}
 
 }
