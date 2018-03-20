@@ -127,6 +127,10 @@ func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 
 	freebusy, err := srv.Freebusy.Query(query).Do()
 
+	if err != nil {
+		panic(err)
+	}
+
 	freebusyCal := freebusy.Calendars["primary"].Busy
 
 	return t0, freebusyCal
@@ -161,7 +165,6 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 
 	}
 
-
 	for _, eveningStart := range nextSevenDays {
 
 		eveningEnd := time.Date(
@@ -178,8 +181,17 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 
 		for _, busySlot := range c {
 
-			startTime, _ := time.Parse(time.RFC3339, busySlot.Start)
-			endTime, _ := time.Parse(time.RFC3339, busySlot.End)
+			startTime, err := time.Parse(time.RFC3339, busySlot.Start) // FIXME check error here
+
+			if err != nil {
+				panic(err)
+			}
+
+			endTime, err := time.Parse(time.RFC3339, busySlot.End)
+
+			if err != nil {
+				panic(err)
+			}
 
 			if ! (endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
 
