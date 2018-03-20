@@ -1,9 +1,9 @@
 package calendar_checker
 
 import (
+	"google.golang.org/api/calendar/v3"
 	"testing"
 	"time"
-	"google.golang.org/api/calendar/v3"
 )
 
 func TestGetNextThreeEveningsFromAfternoon(t *testing.T) {
@@ -13,15 +13,15 @@ func TestGetNextThreeEveningsFromAfternoon(t *testing.T) {
 
 	firstSlot := calendar.TimePeriod{
 		Start: "2018-02-15T16:04:05+01:00",
-		End: "2018-02-15T17:04:05+01:00",
+		End:   "2018-02-15T17:04:05+01:00",
 	}
 
 	secondSlot := calendar.TimePeriod{
 		Start: "2018-02-16T18:04:05+01:00",
-		End: "2018-02-16T21:04:05+01:00",
+		End:   "2018-02-16T21:04:05+01:00",
 	}
 
-	calendarExample := calendar.FreeBusyCalendar{Busy:[]*calendar.TimePeriod{&firstSlot, &secondSlot}}
+	calendarExample := calendar.FreeBusyCalendar{Busy: []*calendar.TimePeriod{&firstSlot, &secondSlot}}
 
 	freeDates := make([]time.Time, 3)
 	freeDates[0], _ = time.Parse(time.RFC3339, "2018-02-15T19:00:00+01:00")
@@ -30,7 +30,6 @@ func TestGetNextThreeEveningsFromAfternoon(t *testing.T) {
 
 	// execution
 	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
-
 
 	// check
 	for i, want := range freeDates {
@@ -51,10 +50,10 @@ func TestGetNextThreeEveningsFromEvening(t *testing.T) {
 
 	onlySlot := calendar.TimePeriod{
 		Start: "2018-02-16T18:04:05+01:00",
-		End: "2018-02-16T21:04:05+01:00",
+		End:   "2018-02-16T21:04:05+01:00",
 	}
 
-	calendarExample := calendar.FreeBusyCalendar{Busy:[]*calendar.TimePeriod{&onlySlot}}
+	calendarExample := calendar.FreeBusyCalendar{Busy: []*calendar.TimePeriod{&onlySlot}}
 
 	freeDates := make([]time.Time, 3)
 	freeDates[0], _ = time.Parse(time.RFC3339, "2018-02-17T19:00:00+01:00")
@@ -63,7 +62,6 @@ func TestGetNextThreeEveningsFromEvening(t *testing.T) {
 
 	// execution
 	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
-
 
 	// check
 	for i, want := range freeDates {
@@ -77,21 +75,20 @@ func TestGetNextThreeEveningsFromEvening(t *testing.T) {
 
 }
 
-func TestGetNextThreeEveningsButYouAreOnVacation (t *testing.T) {
+func TestGetNextThreeEveningsButYouAreOnVacation(t *testing.T) {
 
 	// fixture
 	afternoonStart, _ := time.Parse(time.RFC3339, "2018-02-15T20:04:05+01:00")
 
 	onlySlot := calendar.TimePeriod{
 		Start: "2018-02-16T18:04:05+01:00",
-		End: "2018-02-28T21:04:05+01:00",
+		End:   "2018-02-28T21:04:05+01:00",
 	}
 
-	calendarExample := calendar.FreeBusyCalendar{Busy:[]*calendar.TimePeriod{&onlySlot}}
+	calendarExample := calendar.FreeBusyCalendar{Busy: []*calendar.TimePeriod{&onlySlot}}
 
 	// execution
 	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
-
 
 	// check
 	if len(result) != 0 {

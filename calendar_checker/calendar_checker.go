@@ -193,7 +193,7 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 				panic(err)
 			}
 
-			if ! (endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
+			if !(endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
 
 				isFree = false
 				break
@@ -214,8 +214,6 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 
 	}
 
-
 	return
 
 }
-
