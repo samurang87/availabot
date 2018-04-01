@@ -36,7 +36,7 @@ func TestGetNextThreeEveningsFromAfternoon(t *testing.T) {
 
 		got := result[i]
 
-		if want != got {
+		if want.Unix() != got.Unix() {
 			t.Errorf("For date n. %v, wanted %v, got %v", i, want, got)
 		}
 	}
@@ -68,7 +68,7 @@ func TestGetNextThreeEveningsFromEvening(t *testing.T) {
 
 		got := result[i]
 
-		if want != got {
+		if want.Unix() != got.Unix() {
 			t.Errorf("For date n. %v, wanted %v, got %v", i, want, got)
 		}
 	}
