@@ -90,26 +90,29 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
+func GetBusyCalendar(t0 time.Time) (start time.Time, cal []*calendar.TimePeriod, err error) {
+
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("client_id.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		log.Printf("Unable to read client secret file: %v", err)
+		return start, nil, err
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/calendar-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		log.Printf("Unable to parse client secret file to config: %v", err)
+		return start, nil, err
 	}
 	client := getClient(ctx, config)
 
 	srv, err := calendar.New(client)
-
 	if err != nil {
-		log.Fatalf("Unable to retrieve calendar Client %v", err)
+		log.Printf("Unable to retrieve calendar Client %v", err)
+		return start, nil, err
 	}
 
 	t := t0.Format(time.RFC3339)
@@ -128,12 +131,13 @@ func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 	freebusy, err := srv.Freebusy.Query(query).Do()
 
 	if err != nil {
-		panic(err)
+		log.Println("Error in executing query to get freebusy calendar")
+		return start, nil, err
 	}
 
 	freebusyCal := freebusy.Calendars["primary"].Busy
 
-	return t0, freebusyCal
+	return start, freebusyCal, nil
 
 }
 
@@ -194,10 +198,8 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 			}
 
 			if !(endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
-
 				isFree = false
 				break
-
 			}
 		}
 

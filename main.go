@@ -8,7 +8,11 @@ import (
 
 func main() {
 
-	_, busy := calendar_checker.GetBusyCalendar(time.Now())
+	_, busy, err := calendar_checker.GetBusyCalendar(time.Now())
+
+	if err != nil {
+		panic(err)
+	}
 
 	threeFree, err := calendar_checker.GetNextThreeEvenings(time.Now(), busy)
 
