@@ -129,7 +129,6 @@ func GetBusyCalendar(t0 time.Time) (start time.Time, cal []*calendar.TimePeriod,
 	}
 
 	freebusy, err := srv.Freebusy.Query(query).Do()
-
 	if err != nil {
 		log.Println("Error in executing query to get freebusy calendar")
 		return start, nil, err
@@ -148,9 +147,7 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 
 	if t.Hour() < 19 {
 		startDate = time.Date(t.Year(), t.Month(), t.Day(), 19, 0, 0, 0, t.Location())
-
 	} else {
-
 		startDate = time.Date(t.Year(), t.Month(), t.Day()+1, 19, 0, 0, 0, t.Location())
 	}
 
@@ -159,11 +156,8 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 	for day := 0; day <= 6; day++ {
 
 		if day == 0 {
-
 			nextSevenDays[day] = startDate
-
 		} else {
-
 			nextSevenDays[day] = nextSevenDays[day-1].Add(time.Duration(24) * time.Hour)
 		}
 
@@ -186,14 +180,14 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 		for _, busySlot := range c {
 
 			startTime, err := time.Parse(time.RFC3339, busySlot.Start)
-
 			if err != nil {
+				log.Printf("Unable to parse start time, got this error: %v", err)
 				return nil, err
 			}
 
 			endTime, err := time.Parse(time.RFC3339, busySlot.End)
-
 			if err != nil {
+				log.Printf("Unable to parse end time, got this error: %v", err)
 				return nil, err
 			}
 
@@ -204,13 +198,10 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 		}
 
 		if isFree {
-
 			free = append(free, eveningStart)
-
 		}
 
 		if len(free) == 3 {
-
 			break
 		}
 
