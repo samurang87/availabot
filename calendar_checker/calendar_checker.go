@@ -181,7 +181,7 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 
 		for _, busySlot := range c {
 
-			startTime, err := time.Parse(time.RFC3339, busySlot.Start) // FIXME check error here
+			startTime, err := time.Parse(time.RFC3339, busySlot.Start)
 
 			if err != nil {
 				panic(err)
