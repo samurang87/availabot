@@ -29,7 +29,11 @@ func TestGetNextThreeEveningsFromAfternoon(t *testing.T) {
 	freeDates[2], _ = time.Parse(time.RFC3339, "2018-02-18T19:00:00+01:00")
 
 	// execution
-	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+	result, err := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// check
 	for i, want := range freeDates {
@@ -61,7 +65,11 @@ func TestGetNextThreeEveningsFromEvening(t *testing.T) {
 	freeDates[2], _ = time.Parse(time.RFC3339, "2018-02-19T19:00:00+01:00")
 
 	// execution
-	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+	result, err := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// check
 	for i, want := range freeDates {
@@ -88,7 +96,12 @@ func TestGetNextThreeEveningsButYouAreOnVacation(t *testing.T) {
 	calendarExample := calendar.FreeBusyCalendar{Busy: []*calendar.TimePeriod{&onlySlot}}
 
 	// execution
-	result := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+	result, err := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
+
+
+	if err != nil {
+		panic(err)
+	}
 
 	// check
 	if len(result) != 0 {

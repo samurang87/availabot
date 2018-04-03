@@ -10,7 +10,11 @@ func main() {
 
 	_, busy := calendar_checker.GetBusyCalendar(time.Now())
 
-	threeFree := calendar_checker.GetNextThreeEvenings(time.Now(), busy)
+	threeFree, err := calendar_checker.GetNextThreeEvenings(time.Now(), busy)
+
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println(threeFree)
 

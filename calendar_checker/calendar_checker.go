@@ -138,7 +138,7 @@ func GetBusyCalendar(t0 time.Time) (time.Time, []*calendar.TimePeriod) {
 }
 
 // GetNextThreeEvenings gets a freebusy calendar and a timezone and return the next three free evenings
-func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Time) {
+func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Time, err error) {
 
 	var startDate time.Time
 
@@ -184,13 +184,13 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 			startTime, err := time.Parse(time.RFC3339, busySlot.Start)
 
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 
 			endTime, err := time.Parse(time.RFC3339, busySlot.End)
 
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 
 			if !(endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
