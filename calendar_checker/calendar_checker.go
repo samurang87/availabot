@@ -90,45 +90,123 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func GetBusyCalendar() []*calendar.TimePeriod {
+func GetBusyCalendar(t0 time.Time) (start time.Time, cal []*calendar.TimePeriod, err error) {
+
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("client_id.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		log.Printf("Unable to read client secret file: %v", err)
+		return start, nil, err
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/calendar-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		log.Printf("Unable to parse client secret file to config: %v", err)
+		return start, nil, err
 	}
 	client := getClient(ctx, config)
 
 	srv, err := calendar.New(client)
-
 	if err != nil {
-		log.Fatalf("Unable to retrieve calendar Client %v", err)
+		log.Printf("Unable to retrieve calendar Client %v", err)
+		return start, nil, err
 	}
 
-	t := time.Now().UTC().Format(time.RFC3339)
+	t := t0.Format(time.RFC3339)
 
-	t1 := time.Now().Add(time.Duration(50)*time.Hour).UTC().Format(time.RFC3339)
+	t1 := t0.Add(time.Duration(168) * time.Hour).Format(time.RFC3339)
 
 	fbri := calendar.FreeBusyRequestItem{Id: "primary"}
 
-	query := &calendar.FreeBusyRequest {
+	query := &calendar.FreeBusyRequest{
 		CalendarExpansionMax: 2,
-		Items: []*calendar.FreeBusyRequestItem{&fbri},
-		TimeMin: t,
-		TimeMax: t1,
-		}
+		Items:                []*calendar.FreeBusyRequestItem{&fbri},
+		TimeMin:              t,
+		TimeMax:              t1,
+	}
 
 	freebusy, err := srv.Freebusy.Query(query).Do()
+	if err != nil {
+		log.Println("Error in executing query to get freebusy calendar")
+		return start, nil, err
+	}
 
-	freebusy_cal := freebusy.Calendars["primary"].Busy
+	freebusyCal := freebusy.Calendars["primary"].Busy
 
-	return freebusy_cal
+	return start, freebusyCal, nil
+
+}
+
+// GetNextThreeEvenings gets a freebusy calendar and a timezone and return the next three free evenings
+func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Time, err error) {
+
+	var startDate time.Time
+
+	if t.Hour() < 19 {
+		startDate = time.Date(t.Year(), t.Month(), t.Day(), 19, 0, 0, 0, t.Location())
+	} else {
+		startDate = time.Date(t.Year(), t.Month(), t.Day()+1, 19, 0, 0, 0, t.Location())
+	}
+
+	var nextSevenDays [7]time.Time
+
+	for day := 0; day <= 6; day++ {
+
+		if day == 0 {
+			nextSevenDays[day] = startDate
+		} else {
+			nextSevenDays[day] = nextSevenDays[day-1].Add(time.Duration(24) * time.Hour)
+		}
+
+	}
+
+	for _, eveningStart := range nextSevenDays {
+
+		eveningEnd := time.Date(
+			eveningStart.Year(),
+			eveningStart.Month(),
+			eveningStart.Day()+1,
+			0,
+			0,
+			0,
+			0,
+			eveningStart.Location())
+
+		isFree := true
+
+		for _, busySlot := range c {
+
+			startTime, err := time.Parse(time.RFC3339, busySlot.Start)
+			if err != nil {
+				log.Printf("Unable to parse start time, got this error: %v", err)
+				return nil, err
+			}
+
+			endTime, err := time.Parse(time.RFC3339, busySlot.End)
+			if err != nil {
+				log.Printf("Unable to parse end time, got this error: %v", err)
+				return nil, err
+			}
+
+			if !(endTime.Before(eveningStart) || startTime.After(eveningEnd)) {
+				isFree = false
+				break
+			}
+		}
+
+		if isFree {
+			free = append(free, eveningStart)
+		}
+
+		if len(free) == 3 {
+			break
+		}
+
+	}
+
+	return
 
 }
