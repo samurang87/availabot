@@ -8,38 +8,91 @@
   version = "v0.19.0"
 
 [[projects]]
+  name = "github.com/go-telegram-bot-api/telegram-bot-api"
+  packages = ["."]
+  revision = "0e0af0c480ea98e982d5f4d45fb39577c6ab1e3e"
+  version = "v4.6.2"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/technoweenie/multipartstreamer"
+  packages = ["."]
+  revision = "a90a01d73ae432e2611d178c18367fbaa13e0154"
+  version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/yanzay/log"
+  packages = ["."]
+  revision = "87352bb235060cca8427c8f9fdd68c83b38ba461"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/yanzay/tbot"
+  packages = [
+    ".",
+    "internal/adapter",
+    "model"
+  ]
+  revision = "54833a9197a6bed127eea3299ebc005887a25f32"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "d0aafc73d5cdc42264b0af071c261abac580695e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","google","internal","jws","jwt"]
+  packages = [
+    ".",
+    "google",
+    "internal",
+    "jws",
+    "jwt"
+  ]
   revision = "2f32c3ac0fa4fb807a0fcefb0b6f2468a0d99bd0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
-  packages = ["calendar/v3","gensupport","googleapi","googleapi/internal/uritemplates"]
+  packages = [
+    "calendar/v3",
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates"
+  ]
   revision = "ebf6d55474decb4b02d9a828e264669081dec5f5"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7d21f6feeb6b6fbe5f704b91f38c46cb6b8f3ef8c17e37708294854722bb4b70"
+  inputs-digest = "e31f4ec9cbfe785880167d74237454fb5fec59af849e806877f09e0c52d42829"
   solver-name = "gps-cdcl"
   solver-version = 1

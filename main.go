@@ -1,25 +1,43 @@
 package main
 
 import (
-	"github.com/samurang87/availabot/calendar_checker"
-	"time"
 	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/samurang87/availabot/calendar_checker"
+	"github.com/yanzay/tbot"
 )
+
+// DefaultHandler receives all messages sent by Telegram to the bot
+func DefaultHandler(message *tbot.Message) {
+
+	time := time.Now()
+	_, busyCal, err := calendar_checker.GetBusyCalendar(time)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	result, err := calendar_checker.GetNextThreeEvenings(time, busyCal)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	message.Reply(fmt.Sprint(result))
+}
 
 func main() {
 
-	_, busy, err := calendar_checker.GetBusyCalendar(time.Now())
-
+	bot, err := tbot.NewServer(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	threeFree, err := calendar_checker.GetNextThreeEvenings(time.Now(), busy)
+	bot.HandleDefault(DefaultHandler)
 
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(threeFree)
+	bot.ListenAndServe()
 
 }
