@@ -1,4 +1,4 @@
-package calendar_checker
+package calcheck
 
 import (
 	"encoding/json"

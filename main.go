@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/samurang87/availabot/calendar_checker"
+	"github.com/samurang87/availabot/calcheck"
 	"github.com/yanzay/tbot"
 )
 
@@ -14,13 +14,13 @@ import (
 func DefaultHandler(message *tbot.Message) {
 
 	now := time.Now()
-	busyCal, err := calendar_checker.GetBusyCalendar(now)
+	busyCal, err := calcheck.GetBusyCalendar(now)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err := calendar_checker.GetNextThreeEvenings(now, busyCal)
+	result, err := calcheck.GetNextThreeEvenings(now, busyCal)
 
 	if err != nil {
 		log.Fatal(err)

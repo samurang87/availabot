@@ -1,4 +1,4 @@
-package calendar_checker
+package calcheck
 
 import (
 	"google.golang.org/api/calendar/v3"
