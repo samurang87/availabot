@@ -98,7 +98,6 @@ func TestGetNextThreeEveningsButYouAreOnVacation(t *testing.T) {
 	// execution
 	result, err := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
 
-
 	if err != nil {
 		panic(err)
 	}
