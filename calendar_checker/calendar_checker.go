@@ -90,6 +90,7 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
+// GetBusyCalendar retrieves a list of busy slots in the next seven days starting at t0.
 func GetBusyCalendar(t0 time.Time) (start time.Time, cal []*calendar.TimePeriod, err error) {
 
 	ctx := context.Background()
