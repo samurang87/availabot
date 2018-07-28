@@ -13,14 +13,14 @@ import (
 // DefaultHandler receives all messages sent by Telegram to the bot
 func DefaultHandler(message *tbot.Message) {
 
-	time := time.Now()
-	busyCal, err := calendar_checker.GetBusyCalendar(time)
+	now := time.Now()
+	busyCal, err := calendar_checker.GetBusyCalendar(now)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err := calendar_checker.GetNextThreeEvenings(time, busyCal)
+	result, err := calendar_checker.GetNextThreeEvenings(now, busyCal)
 
 	if err != nil {
 		log.Fatal(err)
