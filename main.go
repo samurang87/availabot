@@ -6,21 +6,21 @@ import (
 	"os"
 	"time"
 
-	"github.com/samurang87/availabot/calendar_checker"
+	"github.com/samurang87/availabot/calcheck"
 	"github.com/yanzay/tbot"
 )
 
 // DefaultHandler receives all messages sent by Telegram to the bot
 func DefaultHandler(message *tbot.Message) {
 
-	time := time.Now()
-	_, busyCal, err := calendar_checker.GetBusyCalendar(time)
+	now := time.Now()
+	busyCal, err := calcheck.GetBusyCalendar(now)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err := calendar_checker.GetNextThreeEvenings(time, busyCal)
+	result, err := calcheck.GetNextThreeEvenings(now, busyCal)
 
 	if err != nil {
 		log.Fatal(err)

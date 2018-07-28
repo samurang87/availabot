@@ -1,4 +1,4 @@
-package calendar_checker
+package calcheck
 
 import (
 	"google.golang.org/api/calendar/v3"
@@ -97,7 +97,6 @@ func TestGetNextThreeEveningsButYouAreOnVacation(t *testing.T) {
 
 	// execution
 	result, err := GetNextThreeEvenings(afternoonStart, calendarExample.Busy)
-
 
 	if err != nil {
 		panic(err)
