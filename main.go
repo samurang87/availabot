@@ -14,7 +14,7 @@ import (
 func DefaultHandler(message *tbot.Message) {
 
 	time := time.Now()
-	_, busyCal, err := calendar_checker.GetBusyCalendar(time)
+	busyCal, err := calendar_checker.GetBusyCalendar(time)
 
 	if err != nil {
 		log.Fatal(err)
