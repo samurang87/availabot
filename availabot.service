@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram bot for checking calendar availability
+After=network.target auditd.service
+ConditionPathExists=/home/ubuntu/availabot
+
+[Service]
+Type=simple
+EnvironmentFile=-/home/ubuntu/availabot/env
+ExecStart=/home/ubuntu/availabot/availabot
+KillMode=process
+Restart=no
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu
