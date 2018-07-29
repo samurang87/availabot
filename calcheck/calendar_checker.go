@@ -91,11 +91,11 @@ func saveToken(file string, token *oauth2.Token) {
 }
 
 // GetBusyCalendar retrieves a list of busy slots in the next seven days starting at t0.
-func GetBusyCalendar(t0 time.Time) (cal []*calendar.TimePeriod, err error) {
+func GetBusyCalendar(t0 time.Time, credentialPath string) (cal []*calendar.TimePeriod, err error) {
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("client_id.json")
+	b, err := ioutil.ReadFile(credentialPath)
 	if err != nil {
 		log.Printf("Unable to read client secret file: %v", err)
 		return nil, err

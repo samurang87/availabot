@@ -10,11 +10,12 @@ import (
 	"github.com/yanzay/tbot"
 )
 
+
 // DefaultHandler receives all messages sent by Telegram to the bot
 func DefaultHandler(message *tbot.Message) {
 
 	now := time.Now()
-	busyCal, err := calcheck.GetBusyCalendar(now)
+	busyCal, err := calcheck.GetBusyCalendar(now, "client_id.json")
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +33,7 @@ func DefaultHandler(message *tbot.Message) {
 func main() {
 
 	bot, err := tbot.NewServer(os.Getenv("TELEGRAM_TOKEN"))
+
 	if err != nil {
 		log.Fatal(err)
 	}
