@@ -1,15 +1,13 @@
 package calcheck
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
+	"math/rand"
 	"os"
-	"os/user"
-	"path/filepath"
+	"sync"
 	"time"
 
 	"golang.org/x/net/context"
@@ -18,98 +16,93 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-// getClient uses a Context and Config to retrieve a Token
-// then generate a Client. It returns the generated Client.
-func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
-	}
-	tok, err := tokenFromFile(cacheFile)
-	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(cacheFile, tok)
-	}
-	return config.Client(ctx, tok)
+type userInfo struct {
+	TelegramUserID   string `json:"tuid"`
+	telegramUsername string
+	CSRFToken        string `json:"csrf"`
+	gcalToken        *oauth2.Token
 }
 
-// getTokenFromWeb uses Config to request a Token.
-// It returns the retrieved Token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
+// maps telegram user ID to a userInfo object
+var tokenCache = make(map[string]userInfo)
+var cacheLock sync.RWMutex
 
-	var code string
-	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatalf("Unable to read authorization code %v", err)
-	}
-
-	tok, err := config.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web %v", err)
-	}
-	return tok
+var config = oauth2.Config{
+	ClientID:     os.Getenv("BOT_CLIENT_ID"),
+	ClientSecret: os.Getenv("BOT_CLIENT_SECRET"),
+	Endpoint:     google.Endpoint,
+	RedirectURL:  "http://localhost:8081/oauth2",
+	Scopes:       []string{calendar.CalendarReadonlyScope},
 }
 
-// tokenCacheFile generates credential file path/filename.
-// It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
-	usr, err := user.Current()
+// StartAuthFlow returns an oauth URL with a CSRF token and the Telegram user ID
+func StartAuthFlow(telegramUserID string) (string, error) {
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+
+	info := userInfo{
+		TelegramUserID: telegramUserID,
+		CSRFToken:      generateCSRFToken(),
+	}
+	tokenCache[telegramUserID] = info
+
+	state, err := encodeOAuthState(info)
 	if err != nil {
 		return "", err
 	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
-	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("calendar-go-quickstart.json")), err
+
+	return config.AuthCodeURL(
+		state,
+		oauth2.AccessTypeOnline,
+		oauth2.SetAuthURLParam("client_id", config.ClientID),
+	), nil
 }
 
-// tokenFromFile retrieves a Token from a given file path.
-// It returns the retrieved Token and any read error encountered.
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	t := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(t)
-	defer f.Close()
-	return t, err
+// IsAuthenticated checks whether a valid oauth token is available for the given Telegram user ID
+func IsAuthenticated(telegramUserID string) bool {
+	cacheLock.RLock()
+	defer cacheLock.RUnlock()
+
+	info, exists := tokenCache[telegramUserID]
+	return exists && info.gcalToken != nil && info.gcalToken.Valid()
 }
 
-// saveToken uses a file path to create a file and store the
-// token in it.
-func saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
-	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+// CacheGCalToken exchanges an auth code for an access token and stores it together with the Telegram user ID
+func CacheGCalToken(ctx context.Context, state, gcalAuthCode string) error {
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+
+	stateInfo, err := decodeOAuthState(state)
 	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
+		return err
 	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
+
+	cachedInfo, exists := tokenCache[stateInfo.TelegramUserID]
+	if !exists {
+		return fmt.Errorf("no auth flow found for user %s", stateInfo.TelegramUserID)
+	}
+	if cachedInfo.CSRFToken != stateInfo.CSRFToken {
+		return fmt.Errorf("invalid CSRF token")
+	}
+
+	gcalToken, err := config.Exchange(ctx, gcalAuthCode)
+	if err != nil {
+		return err
+	}
+
+	cachedInfo.gcalToken = gcalToken
+	tokenCache[cachedInfo.TelegramUserID] = cachedInfo
+	return nil
 }
 
 // GetBusyCalendar retrieves a list of busy slots in the next seven days starting at t0.
-func GetBusyCalendar(t0 time.Time) (cal []*calendar.TimePeriod, err error) {
-
-	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("client_id.json")
-	if err != nil {
-		log.Printf("Unable to read client secret file: %v", err)
-		return nil, err
+func GetBusyCalendar(ctx context.Context, t0 time.Time, telegramUserID string) (cal []*calendar.TimePeriod, err error) {
+	userInfo, exists := tokenCache[telegramUserID]
+	if !exists {
+		return nil, fmt.Errorf("no GCal token for user %s", telegramUserID)
 	}
 
-	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/calendar-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-	if err != nil {
-		log.Printf("Unable to parse client secret file to config: %v", err)
-		return nil, err
-	}
-	client := getClient(ctx, config)
-
+	client := config.Client(ctx, userInfo.gcalToken)
 	srv, err := calendar.New(client)
 	if err != nil {
 		log.Printf("Unable to retrieve calendar Client %v", err)
@@ -161,7 +154,6 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 		} else {
 			nextSevenDays[day] = nextSevenDays[day-1].Add(time.Duration(24) * time.Hour)
 		}
-
 	}
 
 	for _, eveningStart := range nextSevenDays {
@@ -205,9 +197,44 @@ func GetNextThreeEvenings(t time.Time, c []*calendar.TimePeriod) (free []time.Ti
 		if len(free) == 3 {
 			break
 		}
+	}
+	return
+}
 
+const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const tokenLen = 32
+
+func generateCSRFToken() string {
+	p := make([]byte, tokenLen)
+
+	for i := 0; i < tokenLen; i++ {
+		p[i] = chars[rand.Intn(tokenLen)]
 	}
 
-	return
+	rand.Shuffle(tokenLen, func(i, j int) {
+		p[i], p[j] = p[j], p[i]
+	})
 
+	return string(p)
+}
+
+func encodeOAuthState(info userInfo) (string, error) {
+	b, err := json.Marshal(info)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func decodeOAuthState(state string) (userInfo, error) {
+	var info userInfo
+
+	b, err := base64.URLEncoding.DecodeString(state)
+	if err != nil {
+		return info, err
+	}
+
+	err = json.Unmarshal(b, &info)
+	return info, err
 }
